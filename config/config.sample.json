@@ -1,0 +1,10 @@
+{
+    "REPO_URL": "https://github.com/example/repo",
+    "CONTAINER_NAME": "group_site",
+    "DOCKER_IMAGE_NAME": "group_site_img",
+    "DOCKER_IMAGE_TAG": "v1.0",
+    "REMOTE_DIR": ".",
+    "GITHUB_TOKEN": "https://",
+    "tmpFile": ""
+  }
+  
