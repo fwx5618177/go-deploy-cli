@@ -11,20 +11,26 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/google/go-github/v39/github"
 	"golang.org/x/oauth2"
+
+	readConfig "goDeploy/utils"
 )
 
 func main() {
-	// 从环境变量获取相关参数
-	repoURL := os.Getenv("REPO_URL")
-	containerName := os.Getenv("CONTAINER_NAME")
-	dockerImageName := os.Getenv("DOCKER_IMAGE_NAME")
-	dockerImageTag := os.Getenv("DOCKER_IMAGE_TAG")
-	remoteDir := os.Getenv("REMOTE_DIR")
-	tarFile := os.Getenv("TAR_FILE")
-	githubToken := os.Getenv("GITHUB_TOKEN")
+	config, err := readConfig.ReadConfigFile("config.json")
+
+	if err != nil {
+		log.Fatalf("Failed to read config file: %s", err.Error())
+	}
+
+	repoURL := config.RepoURL
+	containerName := config.ContainerName
+	dockerImageName := config.DockerImageName
+	dockerImageTag := config.DockerImageTag
+	remoteDir := config.RemoteDir
+	githubToken := config.GithubToken
 
 	// 拉取代码
-	err := cloneRepo(repoURL, remoteDir, githubToken)
+	err = cloneRepo(repoURL, remoteDir, githubToken)
 	if err != nil {
 		log.Fatalf("Failed to clone repository: %s", err.Error())
 	}
@@ -40,7 +46,7 @@ func main() {
 	buildDockerImage(remoteDir, dockerImageName, dockerImageTag)
 
 	// 删除临时文件
-	removeTempFiles(remoteDir, tarFile)
+	// removeTempFiles(remoteDir, tarFile)
 
 	log.Println("CLI program execution complete")
 }
@@ -109,8 +115,8 @@ func buildDockerImage(remoteDir, dockerImageName, dockerImageTag string) {
 	}
 
 	buildOptions := types.ImageBuildOptions{
-		Tags:        []string{fmt.Sprintf("%s:%s", dockerImageName, dockerImageTag)},
-		ContextPath: remoteDir,
+		Tags:          []string{fmt.Sprintf("%s:%s", dockerImageName, dockerImageTag)},
+		RemoteContext: remoteDir,
 	}
 
 	buildResponse, err := cli.ImageBuild(ctx, nil, buildOptions)
